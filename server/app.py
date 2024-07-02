@@ -18,12 +18,20 @@ api = Api(app)
 
 class Plants(Resource):
     def get(self):
-        plants = plants.query.all()
-        # response
-        # [ { plant }, { plant } ]  
-        return jsonify([plant.serialize() for plant in plants])
+        plants = [plant.to_dict() for plant in Plant.query.all()]
+        return make_response(jsonify(plants), 200)
 
     def post(self):
+
+        data = request.get_json()
+
+        if not data:
+            return make_response(jsonify({'message': 'No data provided'}), 400)
+        
+        if not all(key in data for key in ('name', 'image', 'price')):
+            return make_response(jsonify({'message': 'Missing required fields'}), 400)
+        
+
         new_plant = Plant(
             name=request.json['name'],
             image=request.json['image'],
@@ -31,12 +39,17 @@ class Plants(Resource):
         )
         db.session.add(new_plant)
         db.session.commit()
-        return make_response(jsonify(new_plant.serialize()), 201)
+        return make_response(new_plant.to_dict(), 201)
+api.add_resource(Plants, '/plants')
 
 class PlantByID(Resource):
     def get(self, id):
-        plant = Plant.query.get_or_404(id)
-        return jsonify(plant.serialize())
+        plant = Plant.query.filter_by(id=id).first()
+        if not plant:
+            return make_response(jsonify({'message': 'Plant not found'}), 404)
+        return make_response(jsonify(plant.to_dict()), 200)
+    
+api.add_resource(PlantByID, '/plants/<int:id>')
         
 
 if __name__ == '__main__':

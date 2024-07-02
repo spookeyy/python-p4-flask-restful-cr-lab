@@ -10,3 +10,6 @@ class Plant(db.Model, SerializerMixin):
     name = db.Column(db.String(80), nullable=False)
     image = db.Column(db.String(255), nullable=False)
     price = db.Column(db.Float, nullable=False)
+
+    def __repr__(self):
+        return f'<plant {self.name} / id={self.id} / price={self.price}>'

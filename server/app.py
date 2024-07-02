@@ -19,13 +19,24 @@ api = Api(app)
 class Plants(Resource):
     def get(self):
         plants = plants.query.all()
+        # response
+        # [ { plant }, { plant } ]  
         return jsonify([plant.serialize() for plant in plants])
 
     def post(self):
-        pass
+        new_plant = Plant(
+            name=request.json['name'],
+            image=request.json['image'],
+            price=request.json['price'],
+        )
+        db.session.add(new_plant)
+        db.session.commit()
+        return make_response(jsonify(new_plant.serialize()), 201)
 
 class PlantByID(Resource):
-    pass
+    def get(self, id):
+        plant = Plant.query.get_or_404(id)
+        return jsonify(plant.serialize())
         
 
 if __name__ == '__main__':
